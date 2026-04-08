@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding-top: 70px; }
+        .navbar-brand { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">📚 OpenShelf Library</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/members">Members</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/loans">Loans</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><%= title %></h2>
+            <a href="/members/new" class="btn btn-primary">Add New Member</a>
+        </div>
+
+        <div class="mb-3">
+            <a href="/members?include_inactive=<%= !includeInactive %>" class="btn btn-sm btn-outline-secondary">
+                <%= includeInactive ? 'Hide Inactive Members' : 'Show Inactive Members' %>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Member Since</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (members.length === 0) { %>
+                        <tr>
+                            <td colspan="6" class="text-center">No members found</td>
+                        </tr>
+                    <% } else { %>
+                        <% members.forEach(member => { %>
+                            <tr>
+                                <td><strong><%= member.name %></strong></td>
+                                <td><%= member.email %></td>
+                                <td><%= member.phone || 'N/A' %></td>
+                                <td><%= new Date(member.membership_date).toLocaleDateString() %></td>
+                                <td>
+                                    <span class="badge <%= member.status === 'active' ? 'badge-success' : 'badge-secondary' %>">
+                                        <%= member.status %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/members/<%= member.id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                                    <% if (member.status === 'active') { %>
+                                        <form method="POST" action="/members/<%= member.id %>/deactivate" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Deactivate this member?')">Deactivate</button>
+                                        </form>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

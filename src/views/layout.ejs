@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'OpenShelf Library' %></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 70px;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .badge-overdue {
+            background-color: #dc3545;
+        }
+        .badge-active {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">📚 OpenShelf Library</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/books">Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/members">Members</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/loans">Loans</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <% if (typeof body !== 'undefined') { %>
+            <%- body %>
+        <% } %>
+    </div>
+
+    <footer class="mt-5 py-3 bg-light">
+        <div class="container text-center text-muted">
+            <small>&copy; 2024 OpenShelf Library - Spec2Cloud Introduction Lab</small>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

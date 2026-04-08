@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding-top: 70px; }
+        .navbar-brand { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">📚 OpenShelf Library</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/books">Books</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/members">Members</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/loans">Loans</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><%= title %></h2>
+            <a href="/books/new" class="btn btn-primary">Add New Book</a>
+        </div>
+
+        <form method="GET" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by title, author, or genre..." value="<%= search %>">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                    <a href="/books" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Genre</th>
+                        <th>ISBN</th>
+                        <th>Year</th>
+                        <th>Available</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (books.length === 0) { %>
+                        <tr>
+                            <td colspan="7" class="text-center">No books found</td>
+                        </tr>
+                    <% } else { %>
+                        <% books.forEach(book => { %>
+                            <tr>
+                                <td><strong><%= book.title %></strong></td>
+                                <td><%= book.author %></td>
+                                <td><span class="badge badge-secondary"><%= book.genre %></span></td>
+                                <td><small><%= book.isbn || 'N/A' %></small></td>
+                                <td><%= book.published_year || 'N/A' %></td>
+                                <td>
+                                    <span class="badge <%= book.available_copies > 0 ? 'badge-success' : 'badge-danger' %>">
+                                        <%= book.available_copies %>/<%= book.total_copies %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/books/<%= book.id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                                    <form method="POST" action="/books/<%= book.id %>/delete" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
