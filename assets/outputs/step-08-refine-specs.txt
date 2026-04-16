@@ -1,0 +1,32 @@
+=== Step 08: Refine Specs ===
+Date: 2026-04-16
+
+--- Spec2Cloud: Specification Refinement ---
+Target: Fastify 5.x + PostgreSQL 16
+
+--- Files Updated ---
+  specs/architecture/system-overview.md
+    + Section 7: Modernization Target
+    + Target stack comparison table
+    + Target architecture diagram (Fastify + PostgreSQL)
+    + Modernization principles (6 items)
+
+  specs/api/openapi.yaml
+    + Version bumped to 2.0.0
+    + Modernization target in description
+    + Framework/database/validation targets documented
+
+  specs/data/entity-relationships.md
+    + Section 6: Modernization Annotations
+    + Schema evolution plan (6 phases)
+    + Query migration checklist (SQLite → PostgreSQL)
+
+--- Modernization Decisions Applied ---
+  Framework:  Express.js 4.18 → Fastify 5.x (ADR-001)
+  Database:   SQLite → PostgreSQL 16 (ADR-002)
+  API Style:  HTML forms → RESTful JSON
+  Validation: Manual → JSON Schema (Fastify native)
+  Logging:    console.log → Pino
+  Docs:       None → @fastify/swagger
+
+Specs refined and ready for implementation.

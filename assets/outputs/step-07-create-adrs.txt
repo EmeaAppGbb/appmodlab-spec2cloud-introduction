@@ -1,0 +1,31 @@
+=== Step 07: Create ADRs ===
+Date: 2026-04-16
+
+--- Spec2Cloud: Architecture Decision Records ---
+Output: specs/decisions/
+
+--- ADR-001: Framework Migration ---
+  File: specs/decisions/001-framework-migration.md
+  Decision: Migrate Express.js → Fastify
+  Status: Accepted
+  Key reasons:
+    - 4x performance improvement (~65k vs ~15k req/s)
+    - Built-in JSON Schema validation aligns with Spec2Cloud specs
+    - Native OpenAPI integration via @fastify/swagger
+    - Encapsulated plugin system for module boundaries
+    - Built-in structured logging (pino)
+
+--- ADR-002: Database Migration ---
+  File: specs/decisions/002-database-migration.md
+  Decision: Migrate SQLite → PostgreSQL
+  Status: Accepted
+  Key reasons:
+    - Concurrent write support (MVCC vs single-writer)
+    - Rich data types (ENUM, UUID, JSONB)
+    - Full-text search with GIN indexes
+    - Cloud-ready (Azure Database for PostgreSQL)
+    - Async driver matches Fastify's async model
+
+--- Summary ---
+2 ADRs created documenting modernization decisions.
+Both decisions informed by Spec2Cloud analysis of codebase patterns.

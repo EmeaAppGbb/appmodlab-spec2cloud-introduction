@@ -1,0 +1,41 @@
+=== Step 05: Generate API Contracts ===
+Date: 2026-04-16
+
+--- Spec2Cloud: API Contract Generation ---
+Source: src/routes/*.js (Express route analysis)
+Output: specs/api/openapi.yaml
+Format: OpenAPI 3.0.3
+
+--- Routes Mapped ---
+Books:
+  GET    /books              → listBooks (with ?search query)
+  POST   /books              → createBook
+  GET    /books/{id}         → getBook
+  PUT    /books/{id}         → updateBook (modernized from POST)
+  DELETE /books/{id}         → deleteBook (modernized from POST /:id/delete)
+
+Members:
+  GET    /members            → listMembers (with ?include_inactive)
+  POST   /members            → createMember
+  GET    /members/{id}       → getMember
+  PUT    /members/{id}       → updateMember (modernized from POST)
+  DELETE /members/{id}       → deleteMember (modernized from POST /:id/delete)
+  POST   /members/{id}/deactivate → deactivateMember
+
+Loans:
+  GET    /loans              → listLoans (with ?filter)
+  POST   /loans/checkout     → checkoutBook
+  POST   /loans/{id}/return  → returnBook
+
+--- Schemas Defined ---
+  Book, BookInput, Member, MemberInput, Loan, CheckoutInput
+  LoanStatistics, Error
+
+--- Modernization Notes ---
+  - POST-based updates converted to RESTful PUT/DELETE
+  - Response format changed from HTML to JSON
+  - Added JSON Schema validation constraints
+  - Added proper HTTP status codes (201, 204, 400, 404)
+
+Total endpoints: 15
+Total schemas: 8
