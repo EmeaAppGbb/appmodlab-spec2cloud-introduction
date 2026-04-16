@@ -1,0 +1,766 @@
+openapi: 3.0.3
+info:
+  title: OpenShelf Library API
+  description: >
+    REST API for the OpenShelf Library management system. Provides endpoints for
+    managing books, members, and book loans. This is a server-rendered application
+    using EJS templates; successful mutations redirect to their respective list pages,
+    while errors return plain-text messages.
+  version: 1.0.0
+  contact:
+    name: OpenShelf Library
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Home
+    description: Dashboard and statistics
+  - name: Books
+    description: Book catalog management
+  - name: Members
+    description: Library member management
+  - name: Loans
+    description: Book loan and checkout management
+
+paths:
+  /:
+    get:
+      tags: [Home]
+      summary: Home dashboard
+      description: >
+        Renders the home page with library statistics including total books,
+        active members, active loans, and overdue loans.
+      operationId: getHome
+      responses:
+        "200":
+          description: Home page rendered with library statistics
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /books:
+    get:
+      tags: [Books]
+      summary: List all books
+      description: >
+        Renders the book catalog page. Optionally filters books by a search term
+        that matches against title, author, or genre.
+      operationId: listBooks
+      parameters:
+        - name: search
+          in: query
+          description: Search term to filter books by title, author, or genre
+          required: false
+          schema:
+            type: string
+            default: ""
+      responses:
+        "200":
+          description: Book catalog page rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+    post:
+      tags: [Books]
+      summary: Create a new book
+      description: >
+        Creates a new book in the catalog. On success, redirects to the book list.
+        The available_copies field is automatically set equal to total_copies.
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "302":
+          description: Book created successfully; redirects to /books
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /books
+        "400":
+          description: Validation or creation error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error creating book: UNIQUE constraint failed: books.isbn"
+
+  /books/new:
+    get:
+      tags: [Books]
+      summary: New book form
+      description: Renders the form for adding a new book to the catalog.
+      operationId: newBookForm
+      responses:
+        "200":
+          description: New book form rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /books/{id}:
+    post:
+      tags: [Books]
+      summary: Update a book
+      description: >
+        Updates an existing book. Adjusts available_copies proportionally when
+        total_copies changes. On success, redirects to the book list.
+      operationId: updateBook
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "302":
+          description: Book updated successfully; redirects to /books
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /books
+        "400":
+          description: Validation or update error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error updating book: ..."
+
+  /books/{id}/edit:
+    get:
+      tags: [Books]
+      summary: Edit book form
+      description: Renders the form for editing an existing book.
+      operationId: editBookForm
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      responses:
+        "200":
+          description: Edit book form rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: Book not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Book not found
+
+  /books/{id}/delete:
+    post:
+      tags: [Books]
+      summary: Delete a book
+      description: >
+        Deletes a book from the catalog. Fails if the book has active loans.
+        On success, redirects to the book list.
+      operationId: deleteBook
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      responses:
+        "302":
+          description: Book deleted successfully; redirects to /books
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /books
+        "400":
+          description: Deletion error (e.g., book has active loans)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error deleting book: Cannot delete book with active loans"
+
+  /members:
+    get:
+      tags: [Members]
+      summary: List all members
+      description: >
+        Renders the members list page. By default only active members are shown.
+        Set include_inactive=true to also show inactive members.
+      operationId: listMembers
+      parameters:
+        - name: include_inactive
+          in: query
+          description: When "true", includes inactive members in the list
+          required: false
+          schema:
+            type: string
+            enum: ["true", "false"]
+            default: "false"
+      responses:
+        "200":
+          description: Members list page rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+    post:
+      tags: [Members]
+      summary: Create a new member
+      description: >
+        Creates a new library member with an active status. If membership_date is
+        not provided, defaults to today's date. On success, redirects to the member list.
+      operationId: createMember
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/MemberInput"
+      responses:
+        "302":
+          description: Member created successfully; redirects to /members
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /members
+        "400":
+          description: Validation or creation error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error creating member: UNIQUE constraint failed: members.email"
+
+  /members/new:
+    get:
+      tags: [Members]
+      summary: New member form
+      description: Renders the form for adding a new library member.
+      operationId: newMemberForm
+      responses:
+        "200":
+          description: New member form rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /members/{id}:
+    post:
+      tags: [Members]
+      summary: Update a member
+      description: >
+        Updates an existing member's details. On success, redirects to the member list.
+      operationId: updateMember
+      parameters:
+        - $ref: "#/components/parameters/MemberId"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/MemberUpdateInput"
+      responses:
+        "302":
+          description: Member updated successfully; redirects to /members
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /members
+        "400":
+          description: Validation or update error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error updating member: ..."
+
+  /members/{id}/edit:
+    get:
+      tags: [Members]
+      summary: Edit member form
+      description: Renders the form for editing an existing member.
+      operationId: editMemberForm
+      parameters:
+        - $ref: "#/components/parameters/MemberId"
+      responses:
+        "200":
+          description: Edit member form rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: Member not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Member not found
+
+  /members/{id}/deactivate:
+    post:
+      tags: [Members]
+      summary: Deactivate a member
+      description: >
+        Sets a member's status to inactive. Fails if the member has active loans.
+        On success, redirects to the member list.
+      operationId: deactivateMember
+      parameters:
+        - $ref: "#/components/parameters/MemberId"
+      responses:
+        "302":
+          description: Member deactivated successfully; redirects to /members
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /members
+        "400":
+          description: Deactivation error (e.g., member has active loans)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error deactivating member: Cannot deactivate member with active loans"
+
+  /members/{id}/delete:
+    post:
+      tags: [Members]
+      summary: Delete a member
+      description: >
+        Deletes a member from the system. Fails if the member has any loan history.
+        On success, redirects to the member list.
+      operationId: deleteMember
+      parameters:
+        - $ref: "#/components/parameters/MemberId"
+      responses:
+        "302":
+          description: Member deleted successfully; redirects to /members
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /members
+        "400":
+          description: Deletion error (e.g., member has loan history)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error deleting member: Cannot delete member with loan history"
+
+  /loans:
+    get:
+      tags: [Loans]
+      summary: List loans
+      description: >
+        Renders the loans list page. Automatically updates overdue statuses before
+        listing. Supports filtering by loan status. Also returns loan statistics
+        (active, overdue, returned counts).
+      operationId: listLoans
+      parameters:
+        - name: filter
+          in: query
+          description: >
+            Filter loans by status. Use "active", "overdue", "returned", or "all"
+            to show all loans regardless of status.
+          required: false
+          schema:
+            type: string
+            enum: [active, overdue, returned, all]
+            default: active
+      responses:
+        "200":
+          description: Loans list page rendered with statistics
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /loans/checkout:
+    get:
+      tags: [Loans]
+      summary: Checkout form
+      description: >
+        Renders the book checkout form. Populates available books (those with
+        available_copies > 0) and active members for selection.
+      operationId: checkoutForm
+      responses:
+        "200":
+          description: Checkout form rendered successfully
+          content:
+            text/html:
+              schema:
+                type: string
+    post:
+      tags: [Loans]
+      summary: Checkout a book
+      description: >
+        Creates a new loan by checking out a book to a member. Decrements the
+        book's available_copies. If due_date is not provided, defaults to 14 days
+        from today. Fails if the book has no available copies.
+        On success, redirects to the loans list.
+      operationId: checkoutBook
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "302":
+          description: Book checked out successfully; redirects to /loans
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /loans
+        "400":
+          description: Checkout error (e.g., no available copies)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error checking out book: Book not available for checkout"
+
+  /loans/{id}/return:
+    post:
+      tags: [Loans]
+      summary: Return a book
+      description: >
+        Marks a loan as returned and sets the return_date to today. Increments the
+        book's available_copies. Fails if the loan is not found or already returned.
+        On success, redirects to the loans list.
+      operationId: returnBook
+      parameters:
+        - $ref: "#/components/parameters/LoanId"
+      responses:
+        "302":
+          description: Book returned successfully; redirects to /loans
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /loans
+        "400":
+          description: Return error (e.g., already returned)
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error returning book: Book already returned"
+
+components:
+  parameters:
+    BookId:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier of the book
+      schema:
+        type: integer
+        example: 1
+    MemberId:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier of the member
+      schema:
+        type: integer
+        example: 1
+    LoanId:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier of the loan
+      schema:
+        type: integer
+        example: 1
+
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Auto-generated unique identifier
+          example: 1
+        title:
+          type: string
+          description: Title of the book
+          example: "The Great Gatsby"
+        author:
+          type: string
+          description: Author of the book
+          example: "F. Scott Fitzgerald"
+        isbn:
+          type: string
+          nullable: true
+          description: ISBN (unique)
+          example: "978-0-7432-7356-5"
+        genre:
+          type: string
+          nullable: true
+          description: Genre of the book
+          example: "Fiction"
+        published_year:
+          type: integer
+          nullable: true
+          description: Year the book was published
+          example: 1925
+        available_copies:
+          type: integer
+          description: Number of copies currently available for checkout
+          example: 3
+        total_copies:
+          type: integer
+          description: Total number of copies owned by the library
+          example: 5
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the book record was created
+      required:
+        - id
+        - title
+        - author
+        - available_copies
+        - total_copies
+
+    BookInput:
+      type: object
+      description: Fields for creating or updating a book
+      properties:
+        title:
+          type: string
+          description: Title of the book
+          example: "The Great Gatsby"
+        author:
+          type: string
+          description: Author of the book
+          example: "F. Scott Fitzgerald"
+        isbn:
+          type: string
+          description: ISBN (must be unique)
+          example: "978-0-7432-7356-5"
+        genre:
+          type: string
+          description: Genre of the book
+          example: "Fiction"
+        published_year:
+          type: integer
+          description: Year the book was published
+          example: 1925
+        total_copies:
+          type: integer
+          description: Total number of copies (defaults to 1 if not provided)
+          default: 1
+          example: 5
+      required:
+        - title
+        - author
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Auto-generated unique identifier
+          example: 1
+        name:
+          type: string
+          description: Full name of the member
+          example: "Jane Doe"
+        email:
+          type: string
+          format: email
+          description: Email address (unique)
+          example: "jane.doe@example.com"
+        phone:
+          type: string
+          nullable: true
+          description: Phone number
+          example: "555-0123"
+        membership_date:
+          type: string
+          format: date
+          description: Date the membership was created
+          example: "2025-01-15"
+        status:
+          type: string
+          enum: [active, inactive]
+          description: Membership status
+          example: "active"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the member record was created
+      required:
+        - id
+        - name
+        - email
+        - status
+
+    MemberInput:
+      type: object
+      description: Fields for creating a new member
+      properties:
+        name:
+          type: string
+          description: Full name of the member
+          example: "Jane Doe"
+        email:
+          type: string
+          format: email
+          description: Email address (must be unique)
+          example: "jane.doe@example.com"
+        phone:
+          type: string
+          description: Phone number
+          example: "555-0123"
+        membership_date:
+          type: string
+          format: date
+          description: Membership start date (defaults to today)
+          example: "2025-01-15"
+      required:
+        - name
+        - email
+
+    MemberUpdateInput:
+      type: object
+      description: Fields for updating an existing member
+      properties:
+        name:
+          type: string
+          description: Full name of the member
+          example: "Jane Doe"
+        email:
+          type: string
+          format: email
+          description: Email address (must be unique)
+          example: "jane.doe@example.com"
+        phone:
+          type: string
+          description: Phone number
+          example: "555-0123"
+        status:
+          type: string
+          enum: [active, inactive]
+          description: Membership status
+          example: "active"
+      required:
+        - name
+        - email
+        - status
+
+    Loan:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Auto-generated unique identifier
+          example: 1
+        book_id:
+          type: integer
+          description: ID of the borrowed book
+          example: 3
+        member_id:
+          type: integer
+          description: ID of the borrowing member
+          example: 2
+        loan_date:
+          type: string
+          format: date
+          description: Date the book was checked out
+          example: "2025-03-01"
+        due_date:
+          type: string
+          format: date
+          description: Date the book is due for return
+          example: "2025-03-15"
+        return_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date the book was returned (null if not yet returned)
+          example: "2025-03-10"
+        status:
+          type: string
+          enum: [active, returned, overdue]
+          description: Current status of the loan
+          example: "active"
+        title:
+          type: string
+          description: Title of the borrowed book (joined from books table)
+        author:
+          type: string
+          description: Author of the borrowed book (joined from books table)
+        member_name:
+          type: string
+          description: Name of the borrowing member (joined from members table)
+        email:
+          type: string
+          format: email
+          description: Email of the borrowing member (joined from members table)
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the loan record was created
+      required:
+        - id
+        - book_id
+        - member_id
+        - loan_date
+        - due_date
+        - status
+
+    CheckoutInput:
+      type: object
+      description: Fields for checking out a book
+      properties:
+        book_id:
+          type: integer
+          description: ID of the book to check out
+          example: 3
+        member_id:
+          type: integer
+          description: ID of the member checking out the book
+          example: 2
+        due_date:
+          type: string
+          format: date
+          description: Due date for the loan (defaults to 14 days from today)
+          example: "2025-04-01"
+      required:
+        - book_id
+        - member_id
+
+    LoanStatistics:
+      type: object
+      description: Summary statistics for loans
+      properties:
+        active:
+          type: integer
+          description: Number of currently active loans
+          example: 12
+        overdue:
+          type: integer
+          description: Number of overdue loans
+          example: 3
+        returned:
+          type: integer
+          description: Number of returned loans
+          example: 45
