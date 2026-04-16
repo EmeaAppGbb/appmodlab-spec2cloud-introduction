@@ -1,0 +1,25 @@
+=== Step 1: Explore Legacy App ===
+
+--- Homepage (GET /) ---
+Status: 200 OK
+Content-Length: 4092 bytes
+
+--- Books (GET /books) ---
+Status: 200 OK
+Content-Length: 26320 bytes
+
+--- Members (GET /members) ---
+Status: 200 OK
+Content-Length: 13172 bytes
+
+--- Loans (GET /loans) ---
+Status: 200 OK
+Content-Length: 10861 bytes
+
+--- Books New Form (GET /books/new) ---
+Status: 200 OK
+
+--- Loans Checkout Form (GET /loans/checkout) ---
+Status: 200 OK
+
+All routes responding correctly. Legacy Express+SQLite+EJS app verified.
