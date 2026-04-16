@@ -1,0 +1,56 @@
+{
+  "project": {
+    "name": "OpenShelf Library",
+    "description": "Community library management system — book catalog, member management, and loan tracking",
+    "version": "1.0.0"
+  },
+  "legacy": {
+    "entryPoint": "src/app.js",
+    "language": "JavaScript",
+    "framework": "Express.js",
+    "runtime": "Node.js",
+    "database": "SQLite (better-sqlite3)",
+    "templateEngine": "EJS",
+    "sourceDirectories": [
+      "src/routes",
+      "src/models",
+      "src/views"
+    ],
+    "schemaFiles": [
+      "database/schema.sql",
+      "database/seed.sql"
+    ]
+  },
+  "specs": {
+    "outputDirectory": "specs",
+    "categories": {
+      "architecture": {
+        "path": "specs/architecture",
+        "description": "System architecture documents — components, layers, and deployment topology"
+      },
+      "api": {
+        "path": "specs/api",
+        "description": "API contracts and endpoint specifications (OpenAPI / Swagger)"
+      },
+      "data": {
+        "path": "specs/data",
+        "description": "Entity models, relationships, and database schemas"
+      },
+      "decisions": {
+        "path": "specs/decisions",
+        "description": "Architecture Decision Records (ADRs) for modernization choices"
+      }
+    }
+  },
+  "modernization": {
+    "targetDirectory": "modern",
+    "targetServices": ["Azure App Service"],
+    "goals": [
+      "Extract specifications from legacy codebase",
+      "Generate OpenAPI contract from existing routes",
+      "Document entity relationships and data schemas",
+      "Record architecture decisions as ADRs",
+      "Use specs to drive modern cloud-native rebuild"
+    ]
+  }
+}
