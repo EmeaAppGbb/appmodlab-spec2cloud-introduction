@@ -138,6 +138,34 @@ The **OpenShelf Library** is a retro-styled library management system. It's inte
 **Why this app?**
 It's complex enough to have meaningful architecture, APIs, and data models, but simple enough to understand in an afternoon. Perfect for learning Spec2Cloud! 🎯
 
+### 📸 Initial Application Screenshots
+
+Here's what the legacy OpenShelf Library looks like when running:
+
+**Homepage — Dashboard with live statistics:**
+
+![Homepage](assets/screenshots/01-homepage.png)
+
+**Book Catalog — Full inventory with search, genre badges, and availability tracking:**
+
+![Book Catalog](assets/screenshots/02-book-catalog.png)
+
+**Add New Book — Form for adding books to the catalog:**
+
+![Add Book Form](assets/screenshots/03-add-book-form.png)
+
+**Library Members — Member directory with status management:**
+
+![Members List](assets/screenshots/04-members-list.png)
+
+**Book Loans — Active loans with status cards and filtering:**
+
+![Loans Overview](assets/screenshots/05-loans-overview.png)
+
+**Checkout — Book checkout form with member and book selection:**
+
+![Checkout Form](assets/screenshots/06-checkout-form.png)
+
 ---
 
 ## 🕹️ LAB WALKTHROUGH 🕹️
