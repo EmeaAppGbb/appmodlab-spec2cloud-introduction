@@ -1,5 +1,45 @@
 # Data Model Specification — OpenShelf Library
 
+---
+
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Migration Complexity** | 🟡 Medium |
+| **Migration Order** | 1 of 7 — first priority; all other components depend on the database layer |
+
+### Schema Migration Notes (SQLite → PostgreSQL)
+
+| SQLite Construct | PostgreSQL Equivalent | Affected Tables |
+|---|---|---|
+| `INTEGER PRIMARY KEY AUTOINCREMENT` | `INTEGER GENERATED ALWAYS AS IDENTITY` (or `SERIAL`) | books, members, loans |
+| `TEXT` (for enums) | `TEXT` with `CHECK` or custom `ENUM` type | members.status, loans.status |
+| `DATETIME DEFAULT CURRENT_TIMESTAMP` | `TIMESTAMPTZ DEFAULT NOW()` | All tables |
+| `DATE DEFAULT CURRENT_DATE` | `DATE DEFAULT CURRENT_DATE` | members.membership_date, loans.loan_date |
+| Implicit rowid index | Explicit `PRIMARY KEY` (identical behavior) | All tables |
+| `UNIQUE` constraint on TEXT | `UNIQUE` constraint (identical) | books.isbn, members.email |
+
+### Per-Table Migration Complexity
+
+| Table | Complexity | Notes |
+|---|---|---|
+| books | 🟢 Low | Direct mapping; change PK strategy and timestamp type |
+| members | 🟢 Low | Direct mapping; consider PostgreSQL `ENUM` for status |
+| loans | 🟡 Medium | Foreign keys need `ON DELETE RESTRICT`; date functions differ; add index for compound queries |
+
+### Additional PostgreSQL Recommendations
+
+- Add `updated_at TIMESTAMPTZ DEFAULT NOW()` column to all tables (addresses tech debt TD-19)
+- Use `ENUM` types for `member_status` (`active`, `inactive`) and `loan_status` (`active`, `returned`, `overdue`)
+- Add `ON DELETE RESTRICT` to foreign keys (currently enforced in application code only)
+- Consider `UUID` primary keys for cloud-native scalability (optional, increases migration complexity)
+- Use `pg` connection pool with Fastify lifecycle hooks for proper startup/shutdown
+
+---
+
 ## Entity Relationship Diagram
 
 ```

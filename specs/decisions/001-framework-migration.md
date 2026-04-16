@@ -8,6 +8,30 @@ Proposed
 
 2026-04-16
 
+---
+
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Migration Complexity** | 🟠 Medium-High |
+| **Migration Order** | 3 of 7 — after database schema migration and data access layer rewrite |
+
+### Component-Level Complexity Breakdown
+
+| Component | Complexity | Rationale |
+|---|---|---|
+| Entry point (`app.js`) | 🟡 Medium | Complete rewrite: Express app → Fastify instance with plugin registration, Pino logging, graceful shutdown via `fastify.close()` |
+| Route handlers | 🟡 Medium | Restructure from Express Router to Fastify plugins; replace `req.app.locals.db` with Fastify decorators; async handlers are native |
+| Middleware | 🟡 Medium | Replace `body-parser` (built into Fastify), `express.static` → `@fastify/static`, EJS → removed (JSON API) |
+| Error handling | 🟢 Low | Fastify's `setErrorHandler` and typed errors replace ad-hoc try/catch |
+| Request validation | 🟢 Low (net new) | Add JSON Schema definitions per route — no legacy code to port |
+| OpenAPI generation | 🟢 Low (net new) | Install `@fastify/swagger` + `@fastify/swagger-ui`; auto-generated from route schemas |
+
+---
+
 ## Context
 
 The OpenShelf Library application currently uses **Express 4.x** as its web framework. Express has served the project well for its initial development, but as we modernize for cloud deployment we need to evaluate whether it remains the best choice.

@@ -6,6 +6,42 @@
 
 ---
 
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Overall Migration Complexity** | 🟡 Medium |
+
+### Recommended Migration Order
+
+| Order | Phase | Complexity | Key Actions |
+|---|---|---|---|
+| 1 | Database schema | 🟢 Low | Convert SQLite DDL → PostgreSQL; add `updated_at`, `ENUM` types, `ON DELETE RESTRICT` |
+| 2 | Data access layer | 🟠 Medium-High | Replace sync `better-sqlite3` → async `pg` pool; add transaction support |
+| 3 | Framework swap | 🟡 Medium | Express → Fastify; plugin architecture, Pino logging, lifecycle hooks |
+| 4 | API modernization | 🟡 Medium | HTML endpoints → JSON REST API with Fastify JSON Schema validation |
+| 5 | Config & observability | 🟢 Low | Env vars via `@fastify/env`; structured logging; Application Insights |
+| 6 | Test suite | 🟡 Medium | Unit + integration tests (Vitest/Jest + `light-my-request`) |
+| 7 | Cloud deployment | 🟢 Low | Dockerfile, `/health` endpoint, Azure App Service + Azure Database for PostgreSQL |
+
+### Per-Component Migration Complexity
+
+| Component | Files | Complexity | Notes |
+|---|---|---|---|
+| Database schema | `database/schema.sql`, `seed.sql` | 🟢 Low | Minor syntax changes |
+| Book model | `src/models/book.js` | 🟡 Medium | 7 methods → async; straightforward queries |
+| Member model | `src/models/member.js` | 🟡 Medium | 6 methods → async; business guards need async error handling |
+| Loan model | `src/models/loan.js` | 🟠 Medium-High | 8 methods → async; multi-table transactions for checkout/return |
+| Book routes | `src/routes/books.js` | 🟡 Medium | 6 endpoints → Fastify plugin with JSON schemas |
+| Member routes | `src/routes/members.js` | 🟡 Medium | 7 endpoints → Fastify plugin with JSON schemas |
+| Loan routes | `src/routes/loans.js` | 🟡 Medium | 4 endpoints → Fastify plugin with JSON schemas |
+| Entry point | `src/app.js` | 🟡 Medium | Full rewrite to Fastify bootstrap |
+| Views (EJS) | `src/views/*` | 🟢 Low | Removed entirely; replaced by JSON API |
+
+---
+
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
@@ -529,15 +565,16 @@ Based on the `spec2cloud.config.json` target of **Azure App Service**:
 
 ### 12.4 Component Migration Map
 
-| Current Component | Target (Azure) |
-|---|---|
-| Node.js + Express | Azure App Service (Node.js) |
-| SQLite file DB | Azure Database for PostgreSQL / Azure SQL |
-| EJS templates | Static SPA (React/Vue) or server-rendered |
-| CDN-loaded Bootstrap | Azure CDN or bundled assets |
-| File-based sessions | Azure Cache for Redis (if sessions added) |
-| No auth | Azure Entra ID / MSAL |
-| console.log | Application Insights |
+| Current Component | Target (Azure) | Migration Complexity |
+|---|---|---|
+| Node.js + Express | Fastify 5.x on Azure App Service (Node.js) | 🟡 Medium |
+| SQLite file DB | Azure Database for PostgreSQL Flexible Server | 🟠 Medium-High |
+| EJS templates | Removed — JSON REST API (frontend decoupled) | 🟢 Low |
+| CDN-loaded Bootstrap | N/A — no server-rendered UI | N/A |
+| File-based sessions | Stateless JWT or Azure Cache for Redis | 🟢 Low |
+| No auth | Azure Entra ID / MSAL | 🟡 Medium |
+| console.log | Pino (Fastify built-in) + Application Insights | 🟢 Low |
+| No tests | Vitest/Jest + light-my-request + Supertest | 🟡 Medium |
 
 ---
 

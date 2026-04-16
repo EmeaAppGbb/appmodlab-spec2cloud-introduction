@@ -4,6 +4,27 @@
 
 ---
 
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Migration Complexity** | 🟡 Medium |
+| **Migration Order** | 1 of 7 — migrated together with entity-model as part of the database layer |
+
+### Relationship Migration Notes
+
+- **Foreign key enforcement:** SQLite requires `PRAGMA foreign_keys = ON` per connection. PostgreSQL enforces foreign keys by default — no pragma needed.
+- **Cascade behavior:** Currently no cascade delete; enforced in application code. Add explicit `ON DELETE RESTRICT` constraints in PostgreSQL to enforce at the database level.
+- **Referential checks:** Business rules (e.g., "cannot delete book with active loans") should be supplemented with PostgreSQL `CHECK` constraints or triggers for defense-in-depth.
+- **Index strategy:** Existing indexes (`idx_loans_status`, `idx_loans_due_date`, `idx_books_genre`) map directly. Add a composite index on `loans(book_id, status)` for the active-loan guard queries.
+- **Join performance:** PostgreSQL's query planner handles the `books ↔ loans ↔ members` joins natively; no special migration concern.
+
+---
+
+---
+
 ## ER Diagram
 
 ```mermaid

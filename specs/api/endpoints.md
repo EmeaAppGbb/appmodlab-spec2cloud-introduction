@@ -2,6 +2,38 @@
 
 > **Note:** The legacy application serves HTML, not JSON. These endpoints are documented as-is to inform the modern API design.
 
+---
+
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Migration Complexity** | 🟡 Medium |
+| **Migration Order** | 4 of 7 — after framework scaffold, database migration, and data access layer |
+
+### Migration Notes
+
+- **HTML → JSON API:** All endpoints must be converted from server-rendered HTML responses to JSON REST responses. Legacy `POST` + redirect patterns become proper `GET`/`POST`/`PUT`/`DELETE` returning JSON with HTTP status codes.
+- **Route registration:** Express `Router` mounts (`app.use('/books', booksRouter)`) become Fastify plugin registrations with `fastify.register(booksPlugin, { prefix: '/books' })`.
+- **Request validation:** Fastify's built-in JSON Schema validation replaces the current lack of input validation. Each route should declare `schema: { body, params, querystring, response }`.
+- **Serialization:** Leverage `fast-json-stringify` via Fastify response schemas for type-safe, high-performance serialization.
+- **Verb mapping:** Legacy `POST /books/:id/delete` → `DELETE /api/books/:id`; `POST /books/:id` → `PUT /api/books/:id`.
+- **Error responses:** Standardize on JSON error objects `{ statusCode, error, message }` using Fastify's built-in error handling.
+
+### Per-Endpoint Migration Complexity
+
+| Endpoint Group | Complexity | Notes |
+|---|---|---|
+| Books CRUD | 🟢 Low | Straightforward CRUD; add JSON Schema validation |
+| Members CRUD | 🟢 Low | Similar to books; add email format validation |
+| Members deactivate/delete | 🟡 Medium | Business rule guards need async error handling |
+| Loans checkout/return | 🟠 Medium-High | Multi-step transactions; async DB with proper error propagation |
+| Home dashboard | 🟢 Low | Single aggregation query; simple JSON response |
+
+---
+
 ## Base URL
 
 ```

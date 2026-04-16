@@ -9,6 +9,18 @@ info:
   version: 1.0.0
   contact:
     name: OpenShelf Library
+  x-modernization:
+    target-framework: Fastify
+    target-database: PostgreSQL
+    migration-complexity: Medium
+    migration-order: 4 of 7
+    notes: >
+      This OpenAPI spec documents the LEGACY HTML-based API. The modernized Fastify
+      application should generate a NEW OpenAPI 3.1 spec from Fastify route schemas
+      using @fastify/swagger. Key changes: all responses become JSON, proper HTTP
+      verbs (PUT/DELETE) replace POST-based mutations, request/response schemas are
+      enforced via Fastify's built-in JSON Schema validation, and API versioning
+      is added via /api/v1 prefix.
 
 servers:
   - url: http://localhost:3000

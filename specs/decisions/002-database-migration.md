@@ -8,6 +8,30 @@ Proposed
 
 2026-04-16
 
+---
+
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Migration Complexity** | 🟠 Medium-High |
+| **Migration Order** | 1–2 of 7 — schema migration first (step 1), then data access layer rewrite (step 2) |
+
+### Component-Level Complexity Breakdown
+
+| Component | Complexity | Rationale |
+|---|---|---|
+| Schema DDL (`schema.sql`) | 🟢 Low | Straightforward syntax changes: `AUTOINCREMENT` → `GENERATED ALWAYS AS IDENTITY`, `DATETIME` → `TIMESTAMPTZ` |
+| Seed data (`seed.sql`) | 🟢 Low | Minor date function adjustments; string quoting is already compatible |
+| Model layer (sync → async) | 🟠 Medium-High | All `better-sqlite3` synchronous calls (`.prepare()`, `.get()`, `.all()`, `.run()`) must become async `pg` pool queries. Every model method signature changes. |
+| Connection management | 🟡 Medium | Add `pg.Pool` with connection pooling; integrate with Fastify lifecycle (`onClose` hook for pool shutdown) |
+| Transaction handling | 🟡 Medium | Multi-table operations (`Loan.create`, `Loan.returnBook`) need explicit `BEGIN/COMMIT/ROLLBACK` via `pool.connect()` + client transactions |
+| Migration tooling | 🟢 Low (net new) | Adopt `node-pg-migrate` or Prisma for version-controlled schema migrations |
+
+---
+
 ## Context
 
 The OpenShelf Library application currently uses **SQLite** (via the `better-sqlite3` package) as its database. SQLite is an embedded, file-based database that runs in-process with the Node.js application.

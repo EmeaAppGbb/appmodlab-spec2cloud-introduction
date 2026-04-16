@@ -6,6 +6,30 @@
 
 ---
 
+## Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+| **Overall Migration Complexity** | 🟡 Medium |
+| **Migration Order** | This document covers the full system; see per-component breakdown below |
+
+### Component Migration Summary
+
+| Component | Current | Target | Complexity | Migration Order |
+|---|---|---|---|---|
+| Database engine | SQLite (embedded file) | PostgreSQL (Azure Flexible Server) | 🟢 Low | 1 — Schema migration |
+| Data access layer | `better-sqlite3` (sync) | `pg` Pool (async) | 🟠 Medium-High | 2 — Model rewrite |
+| Web framework | Express 4.x | Fastify 5.x | 🟡 Medium | 3 — Framework swap |
+| API layer | HTML (EJS templates) | JSON REST API | 🟡 Medium | 4 — API modernization |
+| Configuration | Hardcoded values | Environment variables + `@fastify/env` | 🟢 Low | 5 — Config & logging |
+| Logging | `console.log` | Pino (built into Fastify) | 🟢 Low | 5 — Config & logging |
+| Testing | None | Jest/Vitest + Supertest | 🟡 Medium | 6 — Test suite |
+| Deployment | Bare Node.js process | Docker + Azure App Service | 🟢 Low | 7 — Cloud deployment |
+
+---
+
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
@@ -557,14 +581,33 @@ erDiagram
 
 ## 10. Modernization Considerations
 
-### 10.1 Strengths to Preserve
+### 10.1 Modernization Annotations
+
+| Property | Value |
+|---|---|
+| **Target Framework** | Fastify |
+| **Target Database** | PostgreSQL |
+
+### 10.2 Recommended Migration Order
+
+| Order | Phase | Complexity | Description |
+|---|---|---|---|
+| 1 | Database schema migration | 🟢 Low | Convert SQLite DDL to PostgreSQL; `AUTOINCREMENT` → `GENERATED ALWAYS AS IDENTITY`, `DATETIME` → `TIMESTAMPTZ` |
+| 2 | Data access layer rewrite | 🟠 Medium-High | Replace sync `better-sqlite3` with async `pg` pool; rewrite all model methods |
+| 3 | Framework migration | 🟡 Medium | Replace Express with Fastify; restructure to plugin architecture |
+| 4 | API modernization | 🟡 Medium | Convert HTML endpoints to JSON REST API with JSON Schema validation |
+| 5 | Configuration & logging | 🟢 Low | Externalize config via env vars; adopt Pino structured logging |
+| 6 | Testing | 🟡 Medium | Add unit and integration tests for all models and routes |
+| 7 | Cloud deployment | 🟢 Low | Dockerfile, health checks, Azure App Service configuration |
+
+### 10.3 Strengths to Preserve
 
 - **Clean MVC separation** — Routes, Models, and Views are well-organized in dedicated directories.
 - **Simple domain model** — Three entities with clear relationships are easy to map to a modern schema.
 - **Consistent patterns** — All models follow the same constructor-injection and method-naming conventions.
 - **Business rule encapsulation** — Guards (e.g., loan-based delete prevention) are in the model layer, not routes.
 
-### 10.2 Areas Requiring Modernization
+### 10.4 Areas Requiring Modernization
 
 | Area | Current State | Modernization Target |
 |---|---|---|
